@@ -3,8 +3,8 @@
 
 BSDF::BSDF(const Intersection& isect, float eta /*= 1*/)
 //TODO: Properly set worldToTangent and tangentToWorld
-    : worldToTangent(/*COMPUTE ME!*/),
-      tangentToWorld(/*COMPUTE ME!*/),
+    : worldToTangent(glm::transpose(glm::mat3(isect.tangent,isect.bitangent,isect.normalGeometric))),
+      tangentToWorld(glm::mat3(isect.tangent,isect.bitangent,isect.normalGeometric)),
       normal(isect.normalGeometric),
       eta(eta),
       numBxDFs(0),
@@ -16,7 +16,18 @@ BSDF::BSDF(const Intersection& isect, float eta /*= 1*/)
 Color3f BSDF::f(const Vector3f &woW, const Vector3f &wiW, BxDFType flags /*= BSDF_ALL*/) const
 {
     //TODO
-    return Color3f(0.f);
+
+    Vector3f wi = worldToTangent(wiW),wo = worldToTangent(woW);
+    bool reflect = Dot(wiW,normal)*Dot(woW,normal)>0;
+    Color3f f(0.f);
+    for(int i = 0;i<numBxDFs;++i)
+    {
+        if(bxdfs[i]->MatchesFlags(flags)&&((reflect&&(bxdfs[i]->type&BSDF_REFLECTION))||(!reflect&&(bxdfs[i]->type&BSDF_TRANSMISSION))))
+        {
+            f += bxdfs[i]->f(wo,wi);
+        }
+    }
+    return f;
 }
 
 // Use the input random number _xi_ to select
@@ -43,26 +54,107 @@ Color3f BSDF::Sample_f(const Vector3f &woW, Vector3f *wiW, const Point2f &xi,
                        float *pdf, BxDFType type, BxDFType *sampledType) const
 {
     //TODO
-    return Color3f(0.f);
+    int matchingComps = BxDFsMatchingFlags(type);
+    if(matchingComps == 0)
+    {
+        *pdf = 0.f;
+        return Color3f(0.f);
+    }
+    int which = std::min(int(xi.x*matchingComps),matchingComps-1);
+    BxDF *bxdf = NULL;
+    int count = which;
+    for(int tempCount = 0;tempCount<numBxDFs;++tempCount)
+    {
+        if(bxdfs[tempCount]->MatchesFlags(type)&&(count-- == 0))
+        {
+            bxdf = bxdfs[tempCount];
+            break;
+        }
+    }
+
+    Vector3f wo = worldToTangent(woW);
+    Vector3f wi;
+    *pdf = 0.f;
+    Color3f f = bxdf->Sample_f(wo,&wi,xi.x,pdf);
+    if(*pdf == 0.f)
+    {
+        return 0.f;
+    }
+    if(sampledType)
+    {
+        *sampledType = bxdf->type;
+    }
+    *wiW = tangentToWorld(wi);
+
+    if(!(bxdf->type&BSDF_SPECULAR)&&(matchingComps>1))
+    {
+        for(int i=0;i<numBxDFs;i++)
+        {
+            if((bxdfs[i]!=bxdf)&&(bxdfs[i]->MatchesFlags(type)))
+            {
+                *pdf += bxdfs[i]->Pdf(wo,wi);
+            }
+        }
+    }
+    if(matchingComps>1)
+    {
+        *pdf/= matchingComps;
+    }
+
+
+    if(!(bxdf->type&BSDF_SPECULAR))
+    {
+        f = 0.;
+        if(glm::Dot(*wiW,normal)*glm::Dot(woW,normal)>0)
+        {
+            type = BxDFType(type & ~BSDF_TRANSMISSION);
+        }
+        else
+        {
+            type = BxDFType(type & ~BSDF_REFLECTION);
+        }
+        for(int i = 0;i<numBxDFs;++i)
+        {
+            if(bxdfs[i]->MatchesFlags(type))
+            {
+                f+=bxdfs[i]->f(wo,wi);
+            }
+        }
+    }
+    return f;
 }
 
 
 float BSDF::Pdf(const Vector3f &woW, const Vector3f &wiW, BxDFType flags) const
 {
     //TODO
-    return 0.f
+    Vector3f wo = worldToTangent(woW);
+    Vector3f wi = worldToTangent(wiW);
+    float pdfSum = 0.0;
+    for(int tempCount =0;tempCount<numBxDFs;tempCount++)
+    {
+        pdfSum = pdfSum + bxdfs[tempCount]->Pdf(wo,wi);
+    }
+    return pdfSum/numBxDFs;
 }
 
 Color3f BxDF::Sample_f(const Vector3f &wo, Vector3f *wi, const Point2f &xi,
                        Float *pdf, BxDFType *sampledType) const
 {
     //TODO
-    return Color3f(0.f);
+    *wi = WarpFunctions::squareToHemisphereUniform(xi);
+    if(wo.z<0.)
+    {
+        wi->z *= -1.f;
+    }
+    *pdf = Pdf(wo,*wi);
+
+    return f(wo,*wi);
 }
 
 // The PDF for uniform hemisphere sampling
 float BxDF::Pdf(const Vector3f &wo, const Vector3f &wi) const
 {
     //TODO
-    return 0.f;
+    return SameHemisphere(wo,wi)?AbsCosTheta(wi)*InvPi:0.f;
 }

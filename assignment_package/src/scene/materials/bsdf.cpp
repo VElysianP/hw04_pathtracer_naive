@@ -61,8 +61,8 @@ Color3f BSDF::Sample_f(const Vector3f &woW, Vector3f *wiW, const Point2f &xi,
         *pdf = 0.f;
         return Color3f(0.f);
     }
-    int which = std::min(int(xi.x*matchingComps),matchingComps-1);
-    BxDF *bxdf = NULL;
+    int which = std::min((int)std::floor(xi[0]*matchingComps),matchingComps-1);
+    BxDF *bxdf = nullptr;
     int count = which;
     for(int tempCount = 0;tempCount<numBxDFs;++tempCount)
     {
@@ -73,25 +73,27 @@ Color3f BSDF::Sample_f(const Vector3f &woW, Vector3f *wiW, const Point2f &xi,
         }
     }
 
+    Point2f uRemapped(xi[0]*matchingComps-which,xi[1]);
+
     Vector3f wo = worldToTangent*woW;
     Vector3f wi = worldToTangent*woW;
     *pdf = 0.f;
-    Color3f f = bxdf->Sample_f(wo,&wi,xi,pdf);
-    if(*pdf == 0.f)
-    {
-        return Color3f(0.0f);
-    }
     if(sampledType)
     {
         *sampledType = bxdf->type;
+    }
+    Color3f f = bxdf->Sample_f(wo,&wi,uRemapped,pdf,sampledType);
+    if(*pdf == 0)
+    {
+        return Color3f(0.0);
     }
     *wiW = tangentToWorld*wi;
 
     if(!(bxdf->type&BSDF_SPECULAR)&&(matchingComps>1))
     {
-        for(int i=0;i<numBxDFs;i++)
+        for(int i=0;i<numBxDFs;++i)
         {
-            if((bxdfs[i]!=bxdf)&&(bxdfs[i]->MatchesFlags(type)))
+            if((bxdfs[i]!=bxdf)&&bxdfs[i]->MatchesFlags(type))
             {
                 *pdf += bxdfs[i]->Pdf(wo,wi);
             }
@@ -99,26 +101,19 @@ Color3f BSDF::Sample_f(const Vector3f &woW, Vector3f *wiW, const Point2f &xi,
     }
     if(matchingComps>1)
     {
-        *pdf/= matchingComps;
+        *pdf /= matchingComps;
     }
 
 
-    if(!(bxdf->type&BSDF_SPECULAR))
+    if(!(bxdf->type&BSDF_SPECULAR)&&matchingComps>1)
     {
-        f = Color3f(0.0f);
-        if(glm::dot(*wiW,normal)*glm::dot(woW,normal)>0)
-        {
-            type = BxDFType(type & ~BSDF_TRANSMISSION);
-        }
-        else
-        {
-            type = BxDFType(type & ~BSDF_REFLECTION);
-        }
+        bool reflect = glm::dot(*wiW,normal)*glm::dot(woW,normal)>0;
+        f = Color3f(0.0);
         for(int i = 0;i<numBxDFs;++i)
         {
-            if(bxdfs[i]->MatchesFlags(type))
+            if(bxdfs[i]->MatchesFlags(type)&&((reflect&&(bxdfs[i]->type&BSDF_REFLECTION))||(!reflect&&(bxdfs[i]->type&BSDF_TRANSMISSION))))
             {
-                f+=bxdfs[i]->f(wo,wi);
+                f += bxdfs[i]->f(wo,wi);
             }
         }
     }

@@ -74,7 +74,7 @@ void Scene::CreateTestScene()
 
     // Back wall, which is a green rectangle
     Shape* greenWall = new SquarePlane();
-    greenWall->transform = Transform(Vector3f(-5,2.5f,0), Vector3f(0,-90,0), Vector3f(10, 5, 1));
+    greenWall->transform = Transform(Vector3f(-5,2.5f,0), Vector3f(0,90,0), Vector3f(10, 5, 1));
     Primitive* greenWallPrim = new Primitive(std::shared_ptr<Shape>(greenWall));
     greenWallPrim->material = std::shared_ptr<Material>(matteGreen);
     greenWallPrim->name = QString("Wall");

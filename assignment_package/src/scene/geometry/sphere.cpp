@@ -13,7 +13,7 @@ void Sphere::ComputeTBN(const Point3f& P, Normal3f* nor, Vector3f* tan, Vector3f
     *nor = glm::normalize(transform.invTransT() * glm::normalize(P));
     //TODO: Compute tangent and bitangent
     *tan = glm::normalize(glm::cross(glm::vec3(0,0,1),*nor));
-    *bit = glm::normalize(glm::cross(nor,tan));
+    *bit = glm::normalize(glm::cross(*nor,*tan));
 }
 
 bool Sphere::Intersect(const Ray &ray, Intersection *isect) const

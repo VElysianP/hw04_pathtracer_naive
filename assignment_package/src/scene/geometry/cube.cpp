@@ -77,20 +77,20 @@ void Cube::ComputeTBN(const Point3f& P, Normal3f* nor, Vector3f* tan, Vector3f* 
 {
     *nor = glm::normalize(transform.invTransT() * GetCubeNormal(P));
     //TODO: Compute tangent and bitangent
-    if((nor[2]==1)||(nor[2]==-1))
+    if(((*nor)[2]==1)||((*nor)[2]==-1))
     {
         *tan = glm::normalize(transform.T3()*glm::vec3(1,0,0));
-        *bit = glm::normalize(glm::cross(nor,tan));
+        *bit = glm::normalize(glm::cross(*nor,*tan));
     }
-    else if((nor[1]==1)||(nor[1]==-1))
+    else if(((*nor)[1]==1)||((*nor)[1]==-1))
     {
         *tan = glm::normalize(transform.T3()*glm::vec3(1,0,0));
-        *bit = glm::normalize(glm::cross(nor,tan));
+        *bit = glm::normalize(glm::cross(*nor,*tan));
     }
     else
     {
         *tan = glm::normalize(transform.T3()*glm::vec3(0,0,-1));
-        *bit = glm::normalize(glm::cross(nor,tan));
+        *bit = glm::normalize(glm::cross(*nor,*tan));
     }
 }
 

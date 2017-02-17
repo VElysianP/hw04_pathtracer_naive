@@ -137,7 +137,7 @@ void Triangle::ComputeTriangleTBN(const Point3f &P, Normal3f *nor, Vector3f *tan
     *nor = GetNormal(P);
     //TODO: Compute tangent and bitangent based on UV coordinates.
     *tan = glm::normalize(points[1]-points[0]);
-    *bit = glm::normalize(glm::cross(nor,tan));
+    *bit = glm::normalize(glm::cross(*nor,*tan));
 }
 
 

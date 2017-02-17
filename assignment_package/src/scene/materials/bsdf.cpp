@@ -17,8 +17,9 @@ Color3f BSDF::f(const Vector3f &woW, const Vector3f &wiW, BxDFType flags /*= BSD
 {
     //TODO
 
-    Vector3f wi = worldToTangent(wiW),wo = worldToTangent(woW);
-    bool reflect = Dot(wiW,normal)*Dot(woW,normal)>0;
+    Vector3f wi = worldToTangent*wiW;
+    Vector3f wo = worldToTangent*woW;
+    bool reflect = glm::dot(wiW,normal)*glm::dot(woW,normal)>0;
     Color3f f(0.f);
     for(int i = 0;i<numBxDFs;++i)
     {
@@ -72,19 +73,19 @@ Color3f BSDF::Sample_f(const Vector3f &woW, Vector3f *wiW, const Point2f &xi,
         }
     }
 
-    Vector3f wo = worldToTangent(woW);
-    Vector3f wi;
+    Vector3f wo = worldToTangent*woW;
+    Vector3f wi = worldToTangent*woW;
     *pdf = 0.f;
-    Color3f f = bxdf->Sample_f(wo,&wi,xi.x,pdf);
+    Color3f f = bxdf->Sample_f(wo,&wi,xi,pdf);
     if(*pdf == 0.f)
     {
-        return 0.f;
+        return Color3f(0.0f);
     }
     if(sampledType)
     {
         *sampledType = bxdf->type;
     }
-    *wiW = tangentToWorld(wi);
+    *wiW = tangentToWorld*wi;
 
     if(!(bxdf->type&BSDF_SPECULAR)&&(matchingComps>1))
     {
@@ -104,8 +105,8 @@ Color3f BSDF::Sample_f(const Vector3f &woW, Vector3f *wiW, const Point2f &xi,
 
     if(!(bxdf->type&BSDF_SPECULAR))
     {
-        f = 0.;
-        if(glm::Dot(*wiW,normal)*glm::Dot(woW,normal)>0)
+        f = Color3f(0.0f);
+        if(glm::dot(*wiW,normal)*glm::dot(woW,normal)>0)
         {
             type = BxDFType(type & ~BSDF_TRANSMISSION);
         }
@@ -128,8 +129,8 @@ Color3f BSDF::Sample_f(const Vector3f &woW, Vector3f *wiW, const Point2f &xi,
 float BSDF::Pdf(const Vector3f &woW, const Vector3f &wiW, BxDFType flags) const
 {
     //TODO
-    Vector3f wo = worldToTangent(woW);
-    Vector3f wi = worldToTangent(wiW);
+    Vector3f wo = worldToTangent*woW;
+    Vector3f wi = worldToTangent*wiW;
     float pdfSum = 0.0;
     for(int tempCount =0;tempCount<numBxDFs;tempCount++)
     {

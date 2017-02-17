@@ -6,7 +6,7 @@ Point3f WarpFunctions::squareToDiskUniform(const Point2f &sample)
 {
     //TODO
     float radius = std::sqrt(sample[0]);
-    float theta = 2*PI*sample[1];
+    float theta = 2*Pi*sample[1];
 
     return Point3f(radius*std::cos(theta),radius*std::sin(theta),0);
 }
@@ -23,12 +23,12 @@ Point3f WarpFunctions::squareToDiskConcentric(const Point2f &sample)
         if(a>b)
         {
             r=a;
-            phi = (PI/4)*(b/a);
+            phi = (Pi/4)*(b/a);
         }
         else
         {
             r = b;
-            phi = (PI/4)*(2-(a/b));
+            phi = (Pi/4)*(2-(a/b));
         }
     }
     else
@@ -36,14 +36,14 @@ Point3f WarpFunctions::squareToDiskConcentric(const Point2f &sample)
         if(a<b)
         {
             r=-a;
-            phi = (PI/4)*(4+(b/a));
+            phi = (Pi/4)*(4+(b/a));
         }
         else
         {
             r=-b;
             if(b!=0)
             {
-                phi=(PI/4)*(6-(a/b));
+                phi=(Pi/4)*(6-(a/b));
             }
             else
             {
@@ -68,8 +68,8 @@ Point3f WarpFunctions::squareToSphereUniform(const Point2f &sample)
     //TODO
     glm::vec2 newCoordinate = glm::vec2(sample[0]-0.5,sample[1]-0.5);
     float z_coordinate = 2* newCoordinate[0];
-    float x_coordinate = std::cos(2*PI*newCoordinate[1])*sqrt(1-z_coordinate*z_coordinate);
-    float y_coordinate = std::sin(2*PI*newCoordinate[1])*sqrt(1-z_coordinate*z_coordinate);
+    float x_coordinate = std::cos(2*Pi*newCoordinate[1])*sqrt(1-z_coordinate*z_coordinate);
+    float y_coordinate = std::sin(2*Pi*newCoordinate[1])*sqrt(1-z_coordinate*z_coordinate);
 
     return Point3f(x_coordinate,y_coordinate,z_coordinate);
 }
@@ -85,8 +85,8 @@ Point3f WarpFunctions::squareToSphereCapUniform(const Point2f &sample, float the
 {
     //TODO
     float z_coordinate = 1-2* sample[0]*(180-thetaMin)/180;
-    float x_coordinate = std::cos(2*PI*sample[1])*sqrt(1-z_coordinate*z_coordinate);
-    float y_coordinate = std::sin(2*PI*sample[1])*sqrt(1-z_coordinate*z_coordinate);
+    float x_coordinate = std::cos(2*Pi*sample[1])*sqrt(1-z_coordinate*z_coordinate);
+    float y_coordinate = std::sin(2*Pi*sample[1])*sqrt(1-z_coordinate*z_coordinate);
 
     return Point3f(x_coordinate,y_coordinate,z_coordinate);
 }
@@ -96,7 +96,7 @@ float WarpFunctions::squareToSphereCapUniformPDF(const Point3f &sample, float th
     //TODO
     float actualAngle = Pi*(180-thetaMin)/180;
     float area = 2*Pi*(1-cos(actualAngle));
-    return 1/area
+    return 1/area;
 
 }
 
@@ -104,8 +104,8 @@ Point3f WarpFunctions::squareToHemisphereUniform(const Point2f &sample)
 {
     //TODO
     float z_coordinate = sample[0];
-    float x_coordinate = std::cos(2*PI*sample[1])*std::sqrt(1-z_coordinate*z_coordinate);
-    float y_coordinate = std::sin(2*PI*sample[1])*std::sqrt(1-z_coordinate*z_coordinate);
+    float x_coordinate = std::cos(2*Pi*sample[1])*std::sqrt(1-z_coordinate*z_coordinate);
+    float y_coordinate = std::sin(2*Pi*sample[1])*std::sqrt(1-z_coordinate*z_coordinate);
 
     return Point3f(x_coordinate,y_coordinate,z_coordinate);
 }

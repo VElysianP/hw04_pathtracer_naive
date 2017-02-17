@@ -7,13 +7,15 @@ Color3f NaiveIntegrator::Li(const Ray &ray, const Scene &scene, std::shared_ptr<
 
     Color3f liColor = glm::vec3(0.0);
     Color3f totalColor = glm::vec3(0.0);
+
     if(depth<recursionLimit)
     {
         Intersection isec = Intersection();
-        scene.Intersect(ray,isec);
+        scene.Intersect(ray,&isec);
         Vector3f wo = -ray.direction;
 
         Color3f leColor = isec.Le(wo);
+
 
         Ray newRay = isec.SpawnRay(wo);
         Color3f wi = newRay.direction;
@@ -21,12 +23,13 @@ Color3f NaiveIntegrator::Li(const Ray &ray, const Scene &scene, std::shared_ptr<
 
         if(isec.objectHit->name!="Light Source")
         {
-            BSDF* bsdfPointer = isec.bsdf;
-            Color3f fColor = bsdfPointer->f(BSDF::tangentToWorld(wo),BSDF::tangentToWorld(wi));
+            BSDF bsdfPointer = BSDF(isec,1);
+            Color3f fColor = bsdfPointer.f(bsdfPointer.tangentToWorld*wo,bsdfPointer.tangentToWorld*wi);
             totalColor = totalColor + fColor*liColor*AbsCosTheta(wi);
         }
+        totalColor = totalColor+leColor;
 
     }
 
-    return totalColor+leColor;
+    return totalColor;
 }

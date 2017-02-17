@@ -6,13 +6,26 @@
 float Triangle::Area() const
 {
     //TODO
-    return 0;
+    glm::vec3 edge1 = points[1]-points[0];
+    glm::vec3 edge2 = points[2]-points[0];
+
+    float dotProduct = glm::dot(glm::normalize(edge1),glm::normalize(edge2));
+    float sinProduct = std::sin(std::acos(dotProduct));
+
+    float area = glm::length(edge1)*glm::length(edge2)*sinProduct;
+    return area;
 }
 
 float Mesh::Area() const
 {
     //TODO
-    return 0;
+    float areaSum = 0.0;
+    for(int tempCount = 0;tempCount<faces.length();tempCount++)
+    {
+        float tempArea = faces[tempCount]->Area();
+        areaSum = areaSum + tempArea;
+    }
+    return areaSum;
 }
 
 Triangle::Triangle(const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3):
@@ -123,6 +136,8 @@ void Triangle::ComputeTriangleTBN(const Point3f &P, Normal3f *nor, Vector3f *tan
 {
     *nor = GetNormal(P);
     //TODO: Compute tangent and bitangent based on UV coordinates.
+    *tan = glm::normalize(points[1]-points[0]);
+    *bit = glm::normalize(glm::cross(*nor,*tan));
 }
 
 
@@ -138,6 +153,14 @@ void Mesh::ComputeTBN(const Point3f &P, Normal3f *nor, Vector3f *tan, Vector3f *
 {
     *nor = transform.invTransT() * (*nor);
     //TODO: Transform nor, tan, and bit into world space
+//    for(int tempCount = 0; tempCount<faces.size();tempCount++)
+//    {
+//        glm::vec3 edge1 = faces[tempCount]->points[1]-faces[tempCount]->points[0];
+//        glm::vec3 edge2 = faces[tempCount]->points[2]-faces[tempCount]->points[0];
+
+
+//    }
+
 }
 
 

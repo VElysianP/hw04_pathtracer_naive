@@ -149,17 +149,33 @@ void Mesh::InitializeIntersection(Intersection *isect, float t, Point3f pLocal) 
     isect->t = t;
 }
 
+float sign (Point3f p1, Point3f p2, Point3f p3)
+{
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+bool PointInTriangle (Point3f pt, Point3f v1, Point3f v2, Point3f v3)
+{
+    bool b1, b2, b3;
+
+    b1 = sign(pt, v1, v2) < 0.0f;
+    b2 = sign(pt, v2, v3) < 0.0f;
+    b3 = sign(pt, v3, v1) < 0.0f;
+
+    return ((b1 == b2) && (b2 == b3));
+}
+
 void Mesh::ComputeTBN(const Point3f &P, Normal3f *nor, Vector3f *tan, Vector3f *bit) const
 {
     *nor = transform.invTransT() * (*nor);
     //TODO: Transform nor, tan, and bit into world space
-//    for(int tempCount = 0; tempCount<faces.size();tempCount++)
-//    {
-//        glm::vec3 edge1 = faces[tempCount]->points[1]-faces[tempCount]->points[0];
-//        glm::vec3 edge2 = faces[tempCount]->points[2]-faces[tempCount]->points[0];
-
-
-//    }
+    for(int tempCount = 0; tempCount<faces.size();tempCount++)
+    {
+        if(PointInTriangle(P,faces[tempCount]->points[0],faces[tempCount]->points[1],faces[tempCount]->points[2]))
+        {
+            faces[tempCount]->ComputeTBN(P,nor,tan,bit);
+        }
+    }
 
 }
 

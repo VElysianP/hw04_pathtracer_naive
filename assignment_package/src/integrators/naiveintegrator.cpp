@@ -24,7 +24,15 @@ Color3f NaiveIntegrator::Li(const Ray &ray, const Scene &scene, std::shared_ptr<
                 Color3f fColor = isec.bsdf->Sample_f(woW,&wiW,sampler->Get2D(),&currentPdf);
                 Ray newRay = isec.SpawnRay(wiW);
                 liColor = Li(newRay, scene,sampler, --depth);
-                totalColor = leColor + fColor*liColor*AbsDot(wiW,isec.normalGeometric)/currentPdf;
+                if(currentPdf==0)
+                {
+                    totalColor = leColor + fColor*liColor*AbsDot(wiW,isec.normalGeometric);
+                }
+                else
+                {
+                   totalColor = leColor + fColor*liColor*AbsDot(wiW,isec.normalGeometric)/currentPdf;
+                }
+
             }
             else
             {

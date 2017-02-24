@@ -129,7 +129,11 @@ float BSDF::Pdf(const Vector3f &woW, const Vector3f &wiW, BxDFType flags) const
     float pdfSum = 0.0;
     for(int tempCount =0;tempCount<numBxDFs;tempCount++)
     {
-        pdfSum = pdfSum + bxdfs[tempCount]->Pdf(wo,wi);
+        if(bxdfs[tempCount]->type & flags)
+        {
+            pdfSum = pdfSum + bxdfs[tempCount]->Pdf(wo,wi);
+        }
+
     }
     return pdfSum/numBxDFs;
 }

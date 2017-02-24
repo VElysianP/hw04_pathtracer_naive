@@ -12,16 +12,16 @@ implemented.
 # **Implementation** #
 Square Root of Pixel Samples Count = 10 & Recursion Limit = 5 
 
-![](http://i.imgur.com/rBqRybW.png)
+![](http://i.imgur.com/O0bAZS1.png)
 
 Square Root of Pixel Samples Count = 10 & Recursion Limit = 1 
 
-![](http://i.imgur.com/MI8bxKm.png)
+![](http://i.imgur.com/LIylads.png)
 
 Square Root of Pixel Samples Count = 20 & Recursion Limit = 5 
 
-![](http://i.imgur.com/er5nc2a.png)
+![](http://i.imgur.com/YTDL6pH.png)
 
 Square Root of Pixel Samples Count = 30 & Recursion Limit = 5 
 
-![](http://i.imgur.com/Lwj8btw.png)
+![](http://i.imgur.com/PyG7wdO.png)
